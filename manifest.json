@@ -1,0 +1,20 @@
+{
+  "name": "Hacktorial",
+  "description": "Fill in your shifts with a simplr click!",
+  "version": "1.0",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["*://app.factorialhr.com/*"],
+      "js": ["/js/hacktorial.js"]
+    }
+  ]
+}
