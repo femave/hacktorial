@@ -64,24 +64,61 @@ class Hacktorial {
     }
 
     getPeriod(callback) {
-        fetch('https://api.factorialhr.com/attendance/periods?year='+this.year+'&month='+this.month, {
+        var self = this;
+        fetch('https://api.factorialhr.com/accesses', {
             method: 'GET',
             credentials: 'include'
         }).then(response => {
             response.text().then(content => {
-                let periods = JSON.parse(content);
-                periods.forEach(period => {
-                    if (period.month == this.month && period.year == this.year) {
-                        if (period.state == 'pending' || period.state == 'in_progress') {
-                            console.log("This period id is ", period.id);
-                            this.period_id = period.id;
-                        } else {
-                            console.log(`Hey man!, you cannot update this month, period: ${period.state}`);
-                        }
+                let accesses = JSON.parse(content);
+                accesses.forEach(access => {
+                    if (access.current) {
+                        self.accessId = access.id;
                     }
                 });
-                if (!!callback) {
-                    callback(this);
+                if (self.accessId) {
+                    fetch('https://api.factorialhr.com/employees', {
+                        method: 'GET',
+                        credentials: 'include'
+                    }).then(response => {
+                        response.text().then(content => {
+                            let employees = JSON.parse(content);
+                            employees.forEach(employee => {
+                                if (employee.access_id == self.accessId) {
+                                    self.employeeId = employee.id;
+                                }
+                            });
+                            if (self.employeeId) {
+                                console.info("EmplyeeId is ", self.employeeId);
+                                fetch('https://api.factorialhr.com/attendance/periods?year=' + this.year + '&month=' + this.month, {
+                                    method: 'GET',
+                                    credentials: 'include'
+                                }).then(response => {
+                                    response.text().then(content => {
+                                        let periods = JSON.parse(content);
+                                        periods.forEach(period => {
+                                            if (period.employee_id == self.employeeId && period.month == this.month && period.year == this.year) {
+                                                if (period.state == 'pending' || period.state == 'in_progress') {
+                                                    console.log("This period  ", period);
+                                                    console.log("This period id is ", period.id);
+                                                    this.period_id = period.id;
+                                                } else {
+                                                    console.log(`Hey man!, you cannot update this month, period: ${period.state}`);
+                                                }
+                                            }
+                                        });
+                                        if (!!callback) {
+                                            callback(this);
+                                        }
+                                    });
+                                });
+                            } else {
+                                console.error("Could not set employeeId")
+                            }
+                        });
+                    });
+                } else {
+                    console.error("Could not set accessId")
                 }
             });
         });
