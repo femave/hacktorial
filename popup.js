@@ -81,10 +81,15 @@ function applyShiftsOnDate(month) {
     if (items.schedule2_active) {
       clock.push({ clock_in: items.schedule2_in, clock_out: items.schedule2_out });
     }
+	
+	var today = new Date();
+	let year = today.getFullYear();
+	if(month > today.getMonth()){
+		year = year - 1;
+	}
 
-    var today = new Date();
 
-    let fac = new Hacktorial(today.getFullYear(), month, clock);
+    let fac = new Hacktorial(year, month, clock);
     console.log("Running hacktorial!")
     fac.run();
   });
